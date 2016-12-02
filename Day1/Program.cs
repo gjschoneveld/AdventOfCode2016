@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Day1
 {
-    struct Location
+    class Location
     {
         public int x;
         public int y;
@@ -25,15 +25,6 @@ namespace Day1
             Location other = (Location)obj;
 
             return x == other.x && y == other.y;
-        }
-
-        public static bool operator ==(Location a, Location b) {
-            return a.Equals(b);
-        }
-
-        public static bool operator !=(Location a, Location b)
-        {
-            return !a.Equals(b);
         }
     }
 
@@ -59,7 +50,7 @@ namespace Day1
                 start
             };
 
-            Location firstVisitedTwice = start;
+            Location firstVisitedTwice = null;
 
             Location current = start;
 
@@ -99,7 +90,7 @@ namespace Day1
                 for (int i = 1; i <= steps; i++)
                 {
                     current = new Location { x = current.x + dx, y = current.y + dy };
-                    if (firstVisitedTwice == start && visited.Contains(current))
+                    if (firstVisitedTwice == null && visited.Contains(current))
                     {
                         firstVisitedTwice = current;
                     }
