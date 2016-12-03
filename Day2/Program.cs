@@ -82,17 +82,8 @@ namespace Day2
                 {'D', 'B'},
             };
 
-            var right = new Dictionary<char, char>();
-            foreach (var kv in left)
-            {
-                right.Add(kv.Value, kv.Key);
-            }
-
-            var down = new Dictionary<char, char>();
-            foreach (var kv in up)
-            {
-                down.Add(kv.Value, kv.Key);
-            }
+            var right = left.ToDictionary(kv => kv.Value, kv => kv.Key);
+            var down = up.ToDictionary(kv => kv.Value, kv => kv.Key);
 
             char current2 = '5';
 
