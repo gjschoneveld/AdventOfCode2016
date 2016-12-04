@@ -33,7 +33,7 @@ namespace Day4
             return calculated == checksum;
         }
 
-        internal string DecryptedName()
+        internal string DecrypteName()
         {
             string result = "";
             const int totalLetters = 26;
@@ -1187,7 +1187,7 @@ namespace Day4
 
             Console.WriteLine("Answer 1: {0}", result1);
 
-            var northpole = realRooms.Single(r => r.DecryptedName().Contains("north"));
+            var northpole = realRooms.Single(r => r.DecrypteName().Contains("north"));
             int result2 = northpole.id;
 
             Console.WriteLine("Answer 2: {0}", result2);
