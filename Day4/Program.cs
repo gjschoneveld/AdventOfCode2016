@@ -33,7 +33,7 @@ namespace Day4
             return calculated == checksum;
         }
 
-        internal string DecryptName()
+        public string DecryptName()
         {
             string result = "";
             const int totalLetters = 26;
