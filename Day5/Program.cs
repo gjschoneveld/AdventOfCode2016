@@ -8,10 +8,11 @@ namespace Day5
 {
     class Program
     {
+        private static MD5 md5 = MD5.Create();
+
         public static string CalculateMD5Hash(string input)
         {
             // step 1, calculate MD5 hash from input
-            MD5 md5 = MD5.Create();
             byte[] inputBytes = System.Text.Encoding.ASCII.GetBytes(input);
             byte[] hash = md5.ComputeHash(inputBytes);
 
