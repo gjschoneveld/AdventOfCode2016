@@ -79,14 +79,11 @@ namespace Day7
 
         public static IPv7 Parse(string x)
         {
-            string pattern = @"^(?<regular1>\w+)(\[(?<hypernet>\w+)\](?<regular2>\w+))+$";
+            string pattern = @"^((?<regular>\w+)|\[(?<hypernet>\w+)\])+$";
             Regex rgx = new Regex(pattern);
             Match match = rgx.Match(x);
 
-            var regularSequences1 = match.Groups["regular1"].Values();
-            var regularSequences2 = match.Groups["regular2"].Values();
-            var regularSequences = regularSequences1.Union(regularSequences2);
-
+            var regularSequences = match.Groups["regular"].Values();
             var hypernetSequences = match.Groups["hypernet"].Values();
 
             var result = new IPv7
