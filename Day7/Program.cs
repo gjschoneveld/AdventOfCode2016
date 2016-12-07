@@ -26,29 +26,29 @@ namespace Day7
             return lookup.Count == x.Distinct().Count() && lookup.All(v => v.Count() == 1);
         }
 
-        public static bool ContainsPattern(this string x, string pattern)
-        {
-            return x.SubstringsOfLength(pattern.Length).Any(s => s.MatchesPattern(pattern));
-        }
-
-        public static IEnumerable<string> GatherByPattern(this string x, string pattern)
+        public static IEnumerable<string> Gather(this string x, string pattern)
         {
             return x.SubstringsOfLength(pattern.Length).Where(s => s.MatchesPattern(pattern));
+        }
+
+        public static bool ContainsPattern(this string x, string pattern)
+        {
+            return x.Gather(pattern).Any();
         }
 
         public static string Convert(this string x, string from, string to)
         {
             var lookup = from.CreateLookup(x);
-            var characters = to.Select(s => lookup[s].Single()).ToArray();
+            var characters = to.Select(s => lookup[s].Single()).ToArray(); 
             return new string(characters);
         }
     }
 
     static class GroupExtensions
     {
-        public static IEnumerable<string> Values(this Group group)
+        public static List<string> Values(this Group group)
         {
-            return group.Captures.Cast<Capture>().Select(c => c.Value);
+            return group.Captures.Cast<Capture>().Select(c => c.Value).ToList();
         }
     }
 
@@ -72,7 +72,7 @@ namespace Day7
             var regularPattern = "ABA";
             var hypernetPattern = "BAB";
 
-            var regularPartsFound = regularSequences.SelectMany(rs => rs.GatherByPattern(regularPattern));
+            var regularPartsFound = regularSequences.SelectMany(rs => rs.Gather(regularPattern));
             var hypernetPartsNeeded = regularPartsFound.Select(part => part.Convert(regularPattern, hypernetPattern));
 
             return hypernetSequences.Any(hs => hypernetPartsNeeded.Any(part => hs.Contains(part)));
@@ -89,8 +89,8 @@ namespace Day7
 
             var result = new IPv7
             {
-                regularSequences = regularSequences.ToList(),
-                hypernetSequences = hypernetSequences.ToList()
+                regularSequences = regularSequences,
+                hypernetSequences = hypernetSequences
             };
 
             return result;
