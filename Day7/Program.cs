@@ -39,8 +39,8 @@ namespace Day7
         public static string Convert(this string x, string from, string to)
         {
             var lookup = from.CreateLookup(x);
-            var characters = to.Select(s => lookup[s].Single()).ToArray(); 
-            return new string(characters);
+            var characters = to.Select(s => lookup[s].Single());
+            return new string(characters.ToArray());
         }
     }
 
