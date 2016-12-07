@@ -14,12 +14,16 @@ namespace Day7
             return startIndices.Select(si => x.Substring(si, length));
         }
 
-        public static bool MatchesPattern(this string x, string pattern)
+        public static ILookup<char, char> CreateLookup(this string pattern, string x)
         {
             var zipped = pattern.Zip(x, (s, c) => new { symbol = s, character = c });
-            int mappings = zipped.Distinct().Count();
+            return zipped.Distinct().ToLookup(z => z.symbol, z => z.character);
+        }
 
-            return mappings == x.Distinct().Count() && mappings == pattern.Distinct().Count();
+        public static bool MatchesPattern(this string x, string pattern)
+        {
+            var lookup = pattern.CreateLookup(x);
+            return lookup.Count == x.Distinct().Count() && lookup.All(v => v.Count() == 1);
         }
 
         public static bool ContainsPattern(this string x, string pattern)
@@ -34,11 +38,8 @@ namespace Day7
 
         public static string Convert(this string x, string from, string to)
         {
-            var zipped = from.Zip(x, (s, c) => new { symbol = s, character = c });
-            var symbolToCharacter = zipped.Distinct().ToDictionary(z => z.symbol, z => z.character);
-
-            var characters = to.Select(s => symbolToCharacter[s]).ToArray();
-
+            var lookup = from.CreateLookup(x);
+            var characters = to.Select(s => lookup[s].Single()).ToArray();
             return new string(characters);
         }
     }
