@@ -84,13 +84,10 @@ namespace Day7
             Regex rgx = new Regex(pattern);
             Match match = rgx.Match(x);
 
-            var regularSequences = match.Groups["regular"].Values();
-            var hypernetSequences = match.Groups["hypernet"].Values();
-
             var result = new IPv7
             {
-                regularSequences = regularSequences,
-                hypernetSequences = hypernetSequences
+                regularSequences = match.Groups["regular"].Values(),
+                hypernetSequences = match.Groups["hypernet"].Values()
             };
 
             return result;
