@@ -29,31 +29,32 @@ namespace Day9
 
                     // parse command/marker
                     var cmdEnd = input.IndexOf(')', cmdStart) + 1;
-                    var cmd = input.Substring(cmdStart, cmdEnd - cmdStart);
+                    var cmdString = input.Substring(cmdStart, cmdEnd - cmdStart);
 
                     string cmdPattern = @"^\((?<length>\d+)x(?<count>\d+)\)$";
                     Regex cmdRegex = new Regex(cmdPattern);
-                    Match match = cmdRegex.Match(cmd);
+                    Match cmdMatch = cmdRegex.Match(cmdString);
 
-                    int length = int.Parse(match.Groups["length"].Value);
-                    int count = int.Parse(match.Groups["count"].Value);
+                    int cmdLength = int.Parse(cmdMatch.Groups["length"].Value);
+                    int cmdCount = int.Parse(cmdMatch.Groups["count"].Value);
 
                     // determine data length
                     var dataStart = cmdEnd;
+                    var dataEnd = dataStart + cmdLength;
                     long dataLength;
                     if (recursive)
                     {
-                        var data = input.Substring(dataStart, length);
+                        var data = input.Substring(dataStart, cmdLength);
                         dataLength = DecompressedLength(data, recursive);
                     }
                     else
                     {
-                        dataLength = length;
+                        dataLength = cmdLength;
                     }
 
                     // update running total and index
-                    total += dataLength * count;
-                    index = dataStart + length;
+                    total += cmdCount * dataLength;
+                    index = dataEnd;
                 }
             }
 
