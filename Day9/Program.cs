@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Day9
 {
@@ -14,38 +15,45 @@ namespace Day9
             int index = 0;
             while (index < input.Length)
             {
-                int start = input.IndexOf('(', index);
-                if (start == -1) 
+                int cmdStart = input.IndexOf('(', index);
+                if (cmdStart == -1) 
                 {
+                    // regular characters left
                     total += input.Length - index;
                     index = input.Length;
                 }
                 else 
                 {
-                    total += start - index;
+                    // regular characters before command/marker
+                    total += cmdStart - index;
 
-                    var end = input.IndexOf(')', start);
-                    var cmd = input.Substring(start + 1, end - start - 1);
+                    // parse command/marker
+                    var cmdEnd = input.IndexOf(')', cmdStart) + 1;
+                    var cmd = input.Substring(cmdStart, cmdEnd - cmdStart);
 
-                    var parts = cmd.Split('x');
-                    int length = int.Parse(parts[0]);
-                    int count = int.Parse(parts[1]);
+                    string cmdPattern = @"^\((?<length>\d+)x(?<count>\d+)\)$";
+                    Regex cmdRegex = new Regex(cmdPattern);
+                    Match match = cmdRegex.Match(cmd);
 
-                    var data = input.Substring(end + 1, length);
+                    int length = int.Parse(match.Groups["length"].Value);
+                    int count = int.Parse(match.Groups["count"].Value);
 
+                    // determine data length
+                    var dataStart = cmdEnd;
                     long dataLength;
                     if (recursive)
                     {
+                        var data = input.Substring(dataStart, length);
                         dataLength = DecompressedLength(data, recursive);
                     }
                     else
                     {
-                        dataLength = data.Length;
+                        dataLength = length;
                     }
 
+                    // update running total and index
                     total += dataLength * count;
-
-                    index = end + length + 1;
+                    index = dataStart + length;
                 }
             }
 
