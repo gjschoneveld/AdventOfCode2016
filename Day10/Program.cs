@@ -328,7 +328,7 @@ namespace Day10
 
             var items = Item.Parse(input);
 
-            var processQueue = new Queue<Item>(items.Where(b => b.CanBeProcessed()));
+            var processQueue = new Queue<Item>(items.Where(i => i.CanBeProcessed()));
 
             while (processQueue.Count > 0)
             {
