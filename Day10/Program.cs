@@ -12,11 +12,11 @@ namespace Day10
 
         public List<int> values = new List<int>();
 
-        public Item[] destinations = {};
+        public Item[] destinations;
 
         public bool CanBeProcessed()
         {
-            return values.Count == destinations.Length;
+            return destinations != null && destinations.Length == values.Count;
         }
 
         public void Process()
