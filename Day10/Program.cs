@@ -22,9 +22,9 @@ namespace Day10
         public void Process()
         {
             values.Sort();
-            for (int i = 0; i < values.Count; i++)
+            foreach (var pair in destinations.Zip(values, (d, v) => new { dest = d, val = v }))
             {
-                destinations[i].values.Add(values[i]);
+                pair.dest.values.Add(pair.val);
             }
         }
 
