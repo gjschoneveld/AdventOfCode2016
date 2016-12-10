@@ -336,12 +336,9 @@ namespace Day10
 
                 item.Process();
 
-                foreach (var dest in item.destinations)
+                foreach (var dest in item.destinations.Where(d => d.CanBeProcessed()))
                 {
-                    if (dest.CanBeProcessed())
-                    {
-                        processQueue.Enqueue(dest);
-                    }
+                    processQueue.Enqueue(dest);
                 }
             }
 
@@ -351,7 +348,7 @@ namespace Day10
             Console.WriteLine("Answer 1: {0}", result1);
 
 
-            var result2 = items.Where(i => i.type == "output" && i.id <= 2).Aggregate(1, (p, o) => p * o.values.Single());
+            var result2 = items.Where(i => i.type == "output" && i.id <= 2).Aggregate(1, (p, i) => p * i.values.Single());
 
             Console.WriteLine("Answer 2: {0}", result2);
 
