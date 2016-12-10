@@ -342,13 +342,16 @@ namespace Day10
                 }
             }
 
-
-            var result1 = items.Single(i => i.type == "bot" && i.values[0] == 17 && i.values[1] == 61).id;
+            var neededBotValues = new int[] { 17, 61 };
+            var neededBot = items.Single(i => i.type == "bot" && i.values.SequenceEqual(neededBotValues));
+            var result1 = neededBot.id;
 
             Console.WriteLine("Answer 1: {0}", result1);
 
 
-            var result2 = items.Where(i => i.type == "output" && i.id <= 2).Aggregate(1, (p, i) => p * i.values.Single());
+            var neededOutputIDs = new int[] { 0, 1, 2 };
+            var neededOutputs = items.Where(i => i.type == "output" && neededOutputIDs.Contains(i.id));
+            var result2 = neededOutputs.Aggregate(1, (p, i) => p * i.values.Single());
 
             Console.WriteLine("Answer 2: {0}", result2);
 
