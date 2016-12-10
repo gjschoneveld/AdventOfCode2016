@@ -7,12 +7,16 @@ namespace Day10
 {
     abstract class Item
     {
-        public abstract void AddValue(int value);
+        public int id;
 
-        public virtual bool IsFull()
+        protected List<int> values = new List<int>();
+
+        public void AddValue(int value)
         {
-            return false;
+            values.Add(value);
         }
+
+        public abstract bool IsFull();
 
         private static Bot GetBot(Dictionary<int, Bot> bots, int id)
         {
@@ -92,28 +96,21 @@ namespace Day10
 
     class Output : Item
     {
-        public int id;
-        public int value;
-
-        public override void AddValue(int value)
+        public override bool IsFull()
         {
-            this.value = value;
+            return false;
+        }
+
+        public int GetValue()
+        {
+            return values.First();
         }
     }
 
     class Bot : Item
     {
-        public int id;
-
-        private List<int> values = new List<int>();
-
         public Item low;
         public Item high;
-
-        public override void AddValue(int value)
-        {
-            values.Add(value);
-        }
 
         public override bool IsFull()
         {
@@ -393,7 +390,7 @@ namespace Day10
             }
 
 
-            var result2 = items.OfType<Output>().Where(o => o.id <= 2).Aggregate(1, (p, o) => p * o.value);
+            var result2 = items.OfType<Output>().Where(o => o.id <= 2).Aggregate(1, (p, o) => p * o.GetValue());
 
             Console.WriteLine("Answer 2: {0}", result2);
 
