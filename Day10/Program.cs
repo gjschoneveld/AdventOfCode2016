@@ -5,62 +5,50 @@ using System.Text;
 
 namespace Day10
 {
-    abstract class Item
+    class Item
     {
         public int id;
+        public string type;
 
-        protected List<int> values = new List<int>();
+        public List<int> values = new List<int>();
 
-        public void AddValue(int value)
+        public Item[] destinations = {};
+
+        public bool CanBeProcessed()
         {
-            values.Add(value);
+            return values.Count == destinations.Length;
         }
 
-        public abstract bool IsFull();
-
-        private static Bot GetBot(Dictionary<int, Bot> bots, int id)
+        public void Process()
         {
-            if (!bots.ContainsKey(id))
+            values.Sort();
+            for (int i = 0; i < values.Count; i++)
             {
-                bots.Add(id, new Bot
+                destinations[i].values.Add(values[i]);
+            }
+        }
+
+        private static Item GetItem(Dictionary<Tuple<string, int>, Item> items, string type, int id)
+        {
+            var key = new Tuple<string, int>(type, id);
+
+            if (!items.ContainsKey(key))
+            {
+                items.Add(key, new Item
                 {
-                    id = id
+                    id = id,
+                    type = type
                 });
             }
 
-            return bots[id];
-        }
-
-        private static Output GetOutput(Dictionary<int, Output> outputs, int id)
-        {
-            if (!outputs.ContainsKey(id))
-            {
-                outputs.Add(id, new Output
-                {
-                    id = id
-                });
-            }
-
-            return outputs[id];
-        }
-
-        private static Item GetItem(Dictionary<int, Bot> bots, Dictionary<int, Output> outputs, string type, int id)
-        {
-            if (type == "bot")
-            {
-                return GetBot(bots, id);
-            }
-            else
-            {
-                return GetOutput(outputs, id);
-            }
+            return items[key];
         }
 
         public static Item[] Parse(string[] input)
         {
-            var bots = new Dictionary<int, Bot>();
-            var outputs = new Dictionary<int, Output>();
+            var items = new Dictionary<Tuple<string, int>, Item>();
 
+            int inputID = 0;
             foreach (var line in input)
             {
                 var parts = line.Split(' ');
@@ -69,66 +57,35 @@ namespace Day10
                 {
                     int value = int.Parse(parts[1]);
 
-                    string type = parts[4];
-                    int id = int.Parse(parts[5]);
+                    string targetType = parts[4];
+                    int targetID = int.Parse(parts[5]);
 
-                    var item = GetItem(bots, outputs, type, id);
-                    item.AddValue(value);
+                    var item = GetItem(items, "input", inputID++);
+                    item.destinations = new Item[] { 
+                        GetItem(items, targetType, targetID) 
+                    };
+                    item.values.Add(value);
                 }
                 else
                 {
+                    string sourceType = parts[0];
                     int sourceID = int.Parse(parts[1]);
-                    Bot source = GetBot(bots, sourceID);
 
                     string lowType = parts[5];
                     int lowID = int.Parse(parts[6]);
-                    source.low = GetItem(bots, outputs, lowType, lowID);
 
                     string highType = parts[10];
                     int highID = int.Parse(parts[11]);
-                    source.high = GetItem(bots, outputs, highType, highID);
+
+                    var source = GetItem(items, sourceType, sourceID);
+                    source.destinations = new Item[] {
+                        GetItem(items, lowType, lowID),
+                        GetItem(items, highType, highID)
+                    };
                 }
             }
 
-            return bots.Values.Cast<Item>().Union(outputs.Values.Cast<Item>()).ToArray();
-        }
-    }
-
-    class Output : Item
-    {
-        public override bool IsFull()
-        {
-            return false;
-        }
-
-        public int GetValue()
-        {
-            return values.First();
-        }
-    }
-
-    class Bot : Item
-    {
-        public Item low;
-        public Item high;
-
-        public override bool IsFull()
-        {
-            return values.Count == 2;
-        }
-
-        public void Process()
-        {
-            values.Sort();
-
-            if (values[0] == 17 && values[1] == 61)
-            {
-                Console.WriteLine("Answer 1: {0}", id);
-            }
-
-            low.AddValue(values[0]);
-            high.AddValue(values[1]);
-            values.Clear();
+            return items.Values.ToArray();
         }
     }
 
@@ -372,25 +329,30 @@ namespace Day10
 
             var items = Item.Parse(input);
 
-            var fullItems = new Queue<Item>(items.Where(b => b.IsFull()));
+            var processQueue = new Queue<Item>(items.Where(b => b.CanBeProcessed()));
 
-            while (fullItems.Count > 0)
+            while (processQueue.Count > 0)
             {
-                var bot = fullItems.Dequeue() as Bot;
+                var item = processQueue.Dequeue();
 
-                bot.Process();
+                item.Process();
 
-                foreach (var dest in new Item[] { bot.low, bot.high })
+                foreach (var dest in item.destinations)
                 {
-                    if (dest.IsFull())
+                    if (dest.CanBeProcessed())
                     {
-                        fullItems.Enqueue(dest);
+                        processQueue.Enqueue(dest);
                     }
                 }
             }
 
 
-            var result2 = items.OfType<Output>().Where(o => o.id <= 2).Aggregate(1, (p, o) => p * o.GetValue());
+            var result1 = items.Single(i => i.type == "bot" && i.values[0] == 17 && i.values[1] == 61).id;
+
+            Console.WriteLine("Answer 1: {0}", result1);
+
+
+            var result2 = items.Where(i => i.type == "output" && i.id <= 2).Aggregate(1, (p, o) => p * o.values.Single());
 
             Console.WriteLine("Answer 2: {0}", result2);
 
