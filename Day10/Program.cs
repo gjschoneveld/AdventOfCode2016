@@ -55,33 +55,32 @@ namespace Day10
 
                 if (parts[0] == "value")
                 {
+                    var item = GetItem(items, "input", inputID++);
+
                     int value = int.Parse(parts[1]);
+                    item.values.Add(value);
 
                     string targetType = parts[4];
                     int targetID = int.Parse(parts[5]);
+                    var target = GetItem(items, targetType, targetID);
 
-                    var item = GetItem(items, "input", inputID++);
-                    item.destinations = new Item[] { 
-                        GetItem(items, targetType, targetID) 
-                    };
-                    item.values.Add(value);
+                    item.destinations = new Item[] { target };
                 }
                 else
                 {
-                    string sourceType = parts[0];
-                    int sourceID = int.Parse(parts[1]);
+                    string itemType = parts[0];
+                    int itemID = int.Parse(parts[1]);
+                    var item = GetItem(items, itemType, itemID);
 
                     string lowType = parts[5];
                     int lowID = int.Parse(parts[6]);
+                    var low = GetItem(items, lowType, lowID);
 
                     string highType = parts[10];
                     int highID = int.Parse(parts[11]);
+                    var high = GetItem(items, highType, highID);
 
-                    var source = GetItem(items, sourceType, sourceID);
-                    source.destinations = new Item[] {
-                        GetItem(items, lowType, lowID),
-                        GetItem(items, highType, highID)
-                    };
+                    item.destinations = new Item[] { low, high };
                 }
             }
 
