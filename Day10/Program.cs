@@ -40,6 +40,18 @@ namespace Day10
             return outputs[id];
         }
 
+        private static Item GetItem(Dictionary<int, Bot> bots, Dictionary<int, Output> outputs, string type, int id)
+        {
+            if (type == "bot")
+            {
+                return GetBot(bots, id);
+            }
+            else
+            {
+                return GetOutput(outputs, id);
+            }
+        }
+
         public static Item[] Parse(string[] input)
         {
             var bots = new Dictionary<int, Bot>();
@@ -52,36 +64,25 @@ namespace Day10
                 if (parts[0] == "value")
                 {
                     int value = int.Parse(parts[1]);
+
+                    string type = parts[4];
                     int id = int.Parse(parts[5]);
 
-                    Bot bot = GetBot(bots, id);
-                    bot.AddValue(value);
+                    var item = GetItem(bots, outputs, type, id);
+                    item.AddValue(value);
                 }
                 else
                 {
                     int sourceID = int.Parse(parts[1]);
                     Bot source = GetBot(bots, sourceID);
 
+                    string lowType = parts[5];
                     int lowID = int.Parse(parts[6]);
-                    if (parts[5] == "bot")
-                    {
-                        source.low = GetBot(bots, lowID);
-                    }
-                    else
-                    {
-                        source.low = GetOutput(outputs, lowID);
-                    }
+                    source.low = GetItem(bots, outputs, lowType, lowID);
 
+                    string highType = parts[10];
                     int highID = int.Parse(parts[11]);
-                    if (parts[10] == "bot")
-                    {
-                        source.high = GetBot(bots, highID);
-                    }
-                    else
-                    {
-                        source.high = GetOutput(outputs, highID);
-                    }
-
+                    source.high = GetItem(bots, outputs, highType, highID);
                 }
             }
 
