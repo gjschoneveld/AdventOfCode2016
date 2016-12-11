@@ -23,7 +23,7 @@ namespace Day8
 
             if (parts[0] == "rect")
             {
-                var size = parts[1].Split('x').Select(s => int.Parse(s));
+                var size = parts[1].Split('x').Select(int.Parse);
                 int width = size.First();
                 int height = size.Last();
 
@@ -369,7 +369,7 @@ namespace Day8
                 "rotate column x=0 by 4"
              };
 
-            var commands = input.Select(x => Command.Parse(x)).ToList();
+            var commands = input.Select(Command.Parse).ToList();
 
             int fieldWidth = 50;
             int fieldHeight = 6;
