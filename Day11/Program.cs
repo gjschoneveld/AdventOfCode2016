@@ -208,7 +208,9 @@ namespace Day11
                 }
             }
 
-            return result.ToArray();
+            var validResults = result.Where(s => s.IsValid());
+
+            return validResults.ToArray();
         }
 
         public void Print()
@@ -263,10 +265,9 @@ namespace Day11
             {
                 Console.Write(".");
 
-                var rawNext = current.SelectMany(s => s.Next()).Distinct().ToList();
-                var validNext = rawNext.Where(s => s.IsValid()).ToList();
+                var next = current.SelectMany(s => s.Next()).Distinct().ToList();
 
-                var newNext = validNext.Where(s => !seen.Contains(s)).ToList();
+                var newNext = next.Where(s => !seen.Contains(s)).ToList();
 
                 foreach (var n in newNext)
                 {
