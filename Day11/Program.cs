@@ -73,11 +73,10 @@ namespace Day11
 
         public bool IsFinished()
         {
-            bool elevatorAtTop = elevatorFloor == highestFloor;
             bool generatorsAtTop = generatorFloors.All(f => f == highestFloor);
             bool microcontrollersAtTop = microcontrollerFloors.All(f => f == highestFloor);
 
-            return elevatorAtTop && generatorsAtTop && microcontrollersAtTop;
+            return generatorsAtTop && microcontrollersAtTop;
         }
 
         public bool IsValid()
