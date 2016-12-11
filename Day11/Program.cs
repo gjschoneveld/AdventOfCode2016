@@ -269,10 +269,7 @@ namespace Day11
 
                 var newNext = next.Where(s => !seen.Contains(s)).ToList();
 
-                foreach (var n in newNext)
-                {
-                    seen.Add(n);
-                }
+                seen.UnionWith(newNext);
 
                 current = newNext;
             }
