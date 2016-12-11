@@ -124,12 +124,17 @@ namespace Day11
             return result.ToArray();
         }
 
+        private bool IsValidFloor(int f)
+        {
+            return lowestFloor <= f && f <= highestFloor;
+        }
+
         public State[] Next()
         {
             List<State> result = new List<State>();
 
             // move elevator up or down
-            var nextFloors = new int[] { elevatorFloor - 1, elevatorFloor + 1 }.Where(ef => lowestFloor <= ef && ef <= highestFloor);
+            var nextFloors = new int[] { elevatorFloor - 1, elevatorFloor + 1 }.Where(f => IsValidFloor(f));
             foreach (var next in nextFloors)
             {
                 // take one generator
@@ -203,7 +208,7 @@ namespace Day11
 
         public void Print()
         {
-            for (int f = State.highestFloor; State.lowestFloor <= f; f--)
+            for (int f = State.highestFloor; f >= State.lowestFloor; f--)
             {
                 Console.Write("F{0} ", f);
 
