@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Day11
 {
-    class State
+    class State : IEquatable<State>
     {
         public const int lowestFloor = 1;
         public const int highestFloor = 4;
@@ -50,6 +50,11 @@ namespace Day11
             var otherSortedPairs = otherPairs.OrderBy(p => p.Item1).ThenBy(p => p.Item2);
 
             return sortedPairs.SequenceEqual(otherSortedPairs);
+        }
+
+        public bool Equals(State other)
+        {
+            return Equals((object)other);
         }
 
         private State Clone()
