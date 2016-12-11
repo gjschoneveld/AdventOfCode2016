@@ -252,10 +252,8 @@ namespace Day11
         static List<State> FindPath(State start)
         {
             var seen = new HashSet<State> { start };
+
             var current = new List<State> { start };
-
-            int steps = 0;
-
             while (!current.Any(s => s.IsFinished()))
             {
                 Console.Write(".");
@@ -271,7 +269,6 @@ namespace Day11
                 }
 
                 current = newNext;
-                steps++;
             }
             Console.WriteLine();
 
