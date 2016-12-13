@@ -112,7 +112,7 @@ namespace Day13
             return path;
         }
 
-        static HashSet<Position> FindReachable(Position start, int favoriteNumber, int steps)
+        static HashSet<Position> FindReachable(Position start, int steps, int favoriteNumber)
         {
             start.settings = new Settings
             {
@@ -148,7 +148,7 @@ namespace Day13
 
 
             int steps = 50;
-            var seen = FindReachable(start, favoriteNumber, steps);
+            var seen = FindReachable(start, steps, favoriteNumber);
 
             Console.WriteLine("Answer 2: {0}", seen.Count);
 
