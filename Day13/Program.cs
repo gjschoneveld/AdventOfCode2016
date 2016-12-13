@@ -137,7 +137,6 @@ namespace Day13
             return seen;
         }
 
-
         static void Main(string[] args)
         {
             int favoriteNumber = 1358;
