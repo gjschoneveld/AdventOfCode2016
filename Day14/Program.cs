@@ -71,6 +71,22 @@ namespace Day14
             return cache[input];
         }
 
+        static bool IsKey(Dictionary<string, string[]> cache, string salt, int index, bool stretched)
+        {
+            var hashRuns = GetHashRuns(cache, salt + index, stretched);
+            var run = hashRuns.FirstOrDefault(r => r.Length >= 3);
+            if (run == null)
+            {
+                return false;
+            }
+
+            var followupIndices = Enumerable.Range(index + 1, 1000);
+            var followupRuns = followupIndices.Select(i => GetHashRuns(cache, salt + i, stretched));
+
+            bool foundNeededFollowup = followupRuns.Any(runs => runs.Any(r => r.Length >= 5 && r[0] == run[0]));
+            return foundNeededFollowup;
+        }
+
         static int FindIndex(string salt, int key, bool stretched)
         {
             var cache = new Dictionary<string, string[]>();
@@ -81,18 +97,7 @@ namespace Day14
             {
                 index++;
 
-                var hashRuns = GetHashRuns(cache, salt + index, stretched);
-                var run = hashRuns.FirstOrDefault(r => r.Length >= 3);
-                if (run == null)
-                {
-                    continue;
-                }
-
-                var followupIndices = Enumerable.Range(index + 1, 1000);
-                var followupRuns = followupIndices.Select(x => GetHashRuns(cache, salt + x, stretched));
-
-                bool foundNeededFollowup = followupRuns.Any(runs => runs.Any(r => r.Length >= 5 && r[0] == run[0]));
-                if (foundNeededFollowup)
+                if (IsKey(cache, salt, index, stretched))
                 {
                     Console.WriteLine("{0}:\t{1}", keyCount, index);
                     keyCount++;
