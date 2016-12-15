@@ -74,9 +74,7 @@ namespace Day14
             if (!cache.ContainsKey(x))
             {
                 string hash = CalculateHash(x);
-
                 var runs = SplitIntoRuns(hash);
-
                 cache.Add(x, runs);
             }
 
