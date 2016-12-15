@@ -6,14 +6,19 @@ using System.Security.Cryptography;
 
 namespace Day14
 {
-    class Program
+    class Solver
     {
-        private static MD5 md5 = MD5.Create();
+        public string salt;
+        public bool stretched;
 
-        public static string CalculateMD5Hash(string input)
+        private Dictionary<string, string[]> cache = new Dictionary<string, string[]>();
+
+        private MD5 md5 = MD5.Create();
+
+        private string CalculateMD5Hash(string x)
         {
             // step 1, calculate MD5 hash from input
-            byte[] inputBytes = System.Text.Encoding.ASCII.GetBytes(input);
+            byte[] inputBytes = System.Text.Encoding.ASCII.GetBytes(x);
             byte[] hash = md5.ComputeHash(inputBytes);
 
             // step 2, convert byte array to hex string
@@ -26,7 +31,22 @@ namespace Day14
             return sb.ToString();
         }
 
-        static string[] SplitIntoRuns(string x)
+        private string CalculateHash(string x)
+        {
+            string hash = CalculateMD5Hash(x);
+
+            if (stretched)
+            {
+                for (int i = 0; i < 2016; i++)
+                {
+                    hash = CalculateMD5Hash(hash);
+                }
+            }
+
+            return hash;
+        }
+
+        private string[] SplitIntoRuns(string x)
         {
             var result = new List<string>();
 
@@ -49,31 +69,23 @@ namespace Day14
             return result.ToArray();
         }
 
-        static string[] GetHashRuns(Dictionary<string, string[]> cache, string input, bool stretched)
+        private string[] GetHashRuns(string x)
         {
-            if (!cache.ContainsKey(input))
+            if (!cache.ContainsKey(x))
             {
-                string hash = CalculateMD5Hash(input);
-
-                if (stretched)
-                {
-                    for (int i = 0; i < 2016; i++)
-                    {
-                        hash = CalculateMD5Hash(hash);
-                    }
-                }
+                string hash = CalculateHash(x);
 
                 var runs = SplitIntoRuns(hash);
 
-                cache.Add(input, runs);
+                cache.Add(x, runs);
             }
 
-            return cache[input];
+            return cache[x];
         }
 
-        static bool IsKey(Dictionary<string, string[]> cache, string salt, int index, bool stretched)
+        private bool IsKey(int index)
         {
-            var hashRuns = GetHashRuns(cache, salt + index, stretched);
+            var hashRuns = GetHashRuns(salt + index);
             var run = hashRuns.FirstOrDefault(r => r.Length >= 3);
             if (run == null)
             {
@@ -81,23 +93,21 @@ namespace Day14
             }
 
             var followupIndices = Enumerable.Range(index + 1, 1000);
-            var followupRuns = followupIndices.Select(i => GetHashRuns(cache, salt + i, stretched));
+            var followupRuns = followupIndices.Select(i => GetHashRuns(salt + i));
 
             bool foundNeededFollowup = followupRuns.Any(runs => runs.Any(r => r.Length >= 5 && r[0] == run[0]));
             return foundNeededFollowup;
         }
 
-        static int FindIndex(string salt, int key, bool stretched)
+        public int FindIndex(int key)
         {
-            var cache = new Dictionary<string, string[]>();
-
             int index = -1;
             int keyCount = 0;
             while (keyCount < key)
             {
                 index++;
 
-                if (IsKey(cache, salt, index, stretched))
+                if (IsKey(index))
                 {
                     Console.WriteLine("{0}:\t{1}", keyCount, index);
                     keyCount++;
@@ -106,19 +116,34 @@ namespace Day14
 
             return index;
         }
+    }
 
+    class Program
+    {
         static void Main(string[] args)
         {
             string salt = "ngcjuoqr";
 
             int key = 64;
 
-            var result1 = FindIndex(salt, key, false);
+
+            var solver1 = new Solver
+            {
+                salt = salt
+            };
+
+            var result1 = solver1.FindIndex(key);
 
             Console.WriteLine("Answer 1: {0}", result1);
 
 
-            var result2 = FindIndex(salt, key, true);
+            var solver2 = new Solver
+            {
+                salt = salt,
+                stretched = true
+            };
+
+            var result2 = solver2.FindIndex(key);
 
             Console.WriteLine("Answer 2: {0}", result2);
 
