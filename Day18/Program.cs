@@ -12,12 +12,12 @@ namespace Day18
 
         static bool IsSafe(string row, int index)
         {
-            if (index < 0 || row.Length <= index)
+            if (0 <= index && index < row.Length)
             {
-                return true;
+                return row[index] == safeSymbol;
             }
 
-            return row[index] == safeSymbol;
+            return true;
         }
 
         static string NextRow(string row)
