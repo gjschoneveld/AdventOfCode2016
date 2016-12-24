@@ -6,6 +6,12 @@ using System.Text.RegularExpressions;
 
 namespace Day22
 {
+    class Position
+    {
+        public int x;
+        public int y;
+    }
+
     class Node
     {
         public int x;
@@ -32,27 +38,29 @@ namespace Day22
         }
     }
 
-    class StateComparer : IEqualityComparer<Dictionary<Tuple<int, int>, Node>>
+    class StateComparer : IEqualityComparer<Node[,]>
     {
-        public bool Equals(Dictionary<Tuple<int, int>, Node> a, Dictionary<Tuple<int, int>, Node> b)
+        public bool Equals(Node[,] a, Node[,] b)
         {
-            foreach (var kv in a)
+            for (int r = 0; r < a.GetLength(0); r++)
             {
-                var pos = kv.Key;
-                if (a[pos].used != b[pos].used)
+                for (int c = 0; c < a.GetLength(1); c++)
                 {
-                    return false;
-                }
-                if (a[pos].needed != b[pos].needed)
-                {
-                    return false;
+                    if (a[r,c].used != b[r,c].used)
+                    {
+                        return false;
+                    }
+                    if (a[r,c].needed != b[r,c].needed)
+                    {
+                        return false;
+                    }
                 }
             }
 
             return true;
         }
 
-        public int GetHashCode(Dictionary<Tuple<int, int>, Node> obj)
+        public int GetHashCode(Node[,] x)
         {
             return 0;
         }
@@ -60,69 +68,73 @@ namespace Day22
 
     class Program
     {
-        static Dictionary<Tuple<int, int>, Node> Move(Dictionary<Tuple<int, int>, Node> state, Tuple<int, int> from, Tuple<int, int> to)
+        static Node[,] Move(Node[,] state, Position from, Position to)
         {
-            var newState = state.ToDictionary(kv => kv.Key, kv => kv.Value);
+            var newState = state.Clone() as Node[,];
 
-            newState[to] = new Node
+            newState[to.y, to.x] = new Node
             {
-                x = state[to].x,
-                y = state[to].y,
-                used = state[to].used + state[from].used,
-                avail = state[to].avail - state[from].used,
-                needed = state[from].needed
+                x = state[to.y, to.x].x,
+                y = state[to.y, to.x].y,
+                used = state[to.y, to.x].used + state[from.y, from.x].used,
+                avail = state[to.y, to.x].avail - state[from.y, from.x].used,
+                needed = state[from.y, from.x].needed
             };
 
-            newState[from] = new Node
+            newState[from.y, from.x] = new Node
             {
-                x = state[from].x,
-                y = state[from].y,
-                avail = state[from].avail + state[from].used
+                x = state[from.y, from.x].x,
+                y = state[from.y, from.x].y,
+                avail = state[from.y, from.x].avail + state[from.y, from.x].used
             };
 
             return newState;
         }
 
-        static Dictionary<Tuple<int, int>, Node>[] Next(Dictionary<Tuple<int, int>, Node> state)
+        static Node[][,] Next(Node[,] state)
         {
-            var result = new List<Dictionary<Tuple<int, int>, Node>>();
+            var result = new List<Node[,]>();
 
-            foreach (var kv in state)
+            for (int r = 0; r < state.GetLength(0); r++)
             {
-                var self = kv.Key;
-                var node = state[self];
-
-                Tuple<int, int>[] neighbours = {
-                    new Tuple<int, int>(node.x, node.y - 1),
-                    new Tuple<int, int>(node.x - 1, node.y),
-                    new Tuple<int, int>(node.x + 1, node.y),
-                    new Tuple<int, int>(node.x, node.y + 1)
-                };
-
-                foreach (var nb in neighbours)
+                for (int c = 0; c < state.GetLength(1); c++)
                 {
-                    if (state.ContainsKey(nb) && node.used != 0 && node.used <= state[nb].avail)
+                    var node = state[r, c];
+
+                    Position[] neighbours = {
+                        new Position { x = node.x, y = node.y - 1},
+                        new Position { x = node.x - 1, y = node.y},
+                        new Position { x = node.x + 1, y = node.y},
+                        new Position { x = node.x, y = node.y + 1}
+                    };
+
+                    foreach (var nb in neighbours)
                     {
-                        var newState = Move(state, self, nb);
-                        result.Add(newState);
+                        bool validX = 0 <= nb.x && nb.x < state.GetLength(1);
+                        bool validY = 0 <= nb.y && nb.y < state.GetLength(0);
+                        bool validPosition = validX && validY;
+
+                        if (validPosition && node.used != 0 && node.used <= state[nb.y, nb.x].avail)
+                        {
+                            var pos = new Position { x = c, y = r };
+                            var newState = Move(state, pos, nb);
+                            result.Add(newState);
+                        }
                     }
+
                 }
             }
 
             return result.ToArray();
         }
 
-        static void Print(Dictionary<Tuple<int, int>, Node> state)
+        static void Print(Node[,] state)
         {
-            var maxX = state.Max(n => n.Value.x);
-            var maxY = state.Max(n => n.Value.y);
-
-            for (int y = 0; y <= maxY; y++)
-			{
-			    for (int x = 0; x <= maxX; x++)
-			    {
-                    var self = new Tuple<int, int>(x, y);
-                    var node = state[self];
+            for (int r = 0; r < state.GetLength(0); r++)
+            {
+                for (int c = 0; c < state.GetLength(1); c++)
+                {
+                    var node = state[r, c];
 
                     Console.Write("{0}{1}/{2}\t", node.used, node.needed? "*": "", node.used + node.avail);
 			    }
@@ -1157,20 +1169,23 @@ namespace Day22
             Console.WriteLine("Answer 1: {0}", pairs);
 
 
-            var start = nodes.ToDictionary(n => new Tuple<int, int>(n.x, n.y));
+            var maxX = nodes.Max(n => n.x);
+            var maxY = nodes.Max(n => n.y);
+
+            var start = new Node[maxY + 1, maxX + 1];
+            foreach (var node in nodes)
+            {
+                start[node.y, node.x] = node;
+            }
 
             // mark top right as needed
-            var maxX = start.Max(n => n.Value.x);
-            var topRight = new Tuple<int, int>(maxX, 0);
-            start[topRight].needed = true;
+            start[0, maxX].needed = true;
 
-            var topLeft = new Tuple<int, int>(0, 0);
-
-            Dictionary<Tuple<int, int>, Node>[] current = { start };
-            var seen = new HashSet<Dictionary<Tuple<int, int>, Node>>(new StateComparer());
+            Node[][,] current = { start };
+            var seen = new HashSet<Node[,]>(new StateComparer());
 
             int steps = 0;
-            while (!current.Any(s => s[topLeft].needed))
+            while (!current.Any(s => s[0,0].needed))
             {
                 Console.WriteLine(current.Length);
                 // Console.Write('.');
