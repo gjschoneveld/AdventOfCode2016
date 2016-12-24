@@ -62,7 +62,17 @@ namespace Day22
 
         public int GetHashCode(Node[,] x)
         {
-            return 0;
+            int hash = 0;
+
+            for (int r = 0; r < x.GetLength(0); r++)
+            {
+                for (int c = 0; c < x.GetLength(1); c++)
+                {
+                    hash ^= r * c * x[r, c].used;
+                }
+            }
+
+            return hash;
         }
     }
 
