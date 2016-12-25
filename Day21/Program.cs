@@ -7,7 +7,7 @@ namespace Day21
 {
     abstract class Step
     {
-        public abstract string Apply(string x);
+        public abstract string Scramble(string x);
 
         public abstract string Unscramble(string x);
 
@@ -75,7 +75,7 @@ namespace Day21
     {
         public override string Unscramble(string x)
         {
-            return Apply(x);
+            return Scramble(x);
         }
     }
 
@@ -84,7 +84,7 @@ namespace Day21
         public int x;
         public int y;
 
-        public override string Apply(string x)
+        public override string Scramble(string x)
         {
             var chars = x.ToCharArray();
 
@@ -101,7 +101,7 @@ namespace Day21
         public char x;
         public char y;
 
-        public override string Apply(string x)
+        public override string Scramble(string x)
         {
             var chars = x.ToCharArray();
 
@@ -139,7 +139,7 @@ namespace Day21
     {
         public int steps;
 
-        public override string Apply(string x)
+        public override string Scramble(string x)
         {
             return Rotate(x, steps);
         }
@@ -154,7 +154,7 @@ namespace Day21
     {
         public char letter;
 
-        public override string Apply(string x)
+        public override string Scramble(string x)
         {
             int position = x.IndexOf(letter);
 
@@ -172,7 +172,7 @@ namespace Day21
             for (int steps = 0; steps < x.Length; steps++)
             {
                 var candidate = Rotate(x, steps);
-                if (Apply(candidate) == x)
+                if (Scramble(candidate) == x)
                 {
                     return candidate;
                 }
@@ -187,7 +187,7 @@ namespace Day21
         public int start;
         public int end;
 
-        public override string Apply(string x)
+        public override string Scramble(string x)
         {
             var sub = x.Substring(start, end - start + 1);
             var reversed = new string(sub.Reverse().ToArray());
@@ -211,7 +211,7 @@ namespace Day21
             return new string(chars.ToArray());
         }
 
-        public override string Apply(string x)
+        public override string Scramble(string x)
         {
             return Move(x, from, to);
         }
@@ -334,7 +334,7 @@ namespace Day21
             var password = "abcdefgh";
             foreach (var step in steps)
             {
-                password = step.Apply(password);
+                password = step.Scramble(password);
             }
 
             Console.WriteLine("Answer 1: {0}", password);
