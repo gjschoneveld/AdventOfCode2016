@@ -35,9 +35,47 @@ namespace Day25
             }
         }
 
+        private List<Computer> states = new List<Computer>();
+
+        public void StoreState()
+        {
+            states.Add(new Computer
+            {
+                instructionMemory = instructionMemory,
+                programCounter = programCounter,
+                registerFile = registerFile.ToDictionary(r => r.Key, r => r.Value)
+            });
+        }
+
+        public bool BeenHereBefore()
+        {
+            foreach (var state in states)
+            {
+                if (programCounter != state.programCounter)
+                {
+                    continue;
+                }
+
+                bool seen = true;
+                foreach (var kv in registerFile)
+                {
+                    if (kv.Value != state.registerFile[kv.Key])
+                    {
+                        seen = false;
+                    }
+                }
+
+                if (seen)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         public bool Run()
         {
-            var states = new List<Dictionary<string, int>>();
             int expected = 0;
 
             while (0 <= programCounter && programCounter < instructionMemory.Length)
@@ -76,24 +114,12 @@ namespace Day25
 
                         if (x == 0)
                         {
-                            foreach (var state in states)
+                            if (BeenHereBefore())
                             {
-                                bool seen = true;
-                                foreach (var kv in registerFile)
-                                {
-                                    if (kv.Value != state[kv.Key])
-                                    {
-                                        seen = false;
-                                    }
-                                }
-
-                                if (seen)
-                                {
-                                    return true;
-                                }
+                                return true;
                             }
 
-                            states.Add(registerFile.ToDictionary(r => r.Key, r => r.Value));
+                            StoreState();
                         }
 
                         break;
@@ -157,7 +183,7 @@ namespace Day25
                 comp.Write("a", a);
                 done = comp.Run();
             }
-            
+
             Console.WriteLine("Answer: {0}", a);
 
             Console.ReadKey();
