@@ -71,7 +71,15 @@ namespace Day21
         }
     }
 
-    class SwapPositionStep : Step
+    abstract class ReversibleStep : Step
+    {
+        public override string Unscramble(string x)
+        {
+            return Apply(x);
+        }
+    }
+
+    class SwapPositionStep : ReversibleStep
     {
         public int x;
         public int y;
@@ -86,14 +94,9 @@ namespace Day21
 
             return new string(chars);
         }
-
-        public override string Unscramble(string x)
-        {
-            return Apply(x);
-        }
     }
 
-    class SwapLetterStep : Step
+    class SwapLetterStep : ReversibleStep
     {
         public char x;
         public char y;
@@ -115,11 +118,6 @@ namespace Day21
             }
 
             return new string(chars);
-        }
-
-        public override string Unscramble(string x)
-        {
-            return Apply(x);
         }
     }
 
@@ -184,7 +182,7 @@ namespace Day21
         }
     }
 
-    class ReverseStep : Step
+    class ReverseStep : ReversibleStep
     {
         public int start;
         public int end;
@@ -195,11 +193,6 @@ namespace Day21
             var reversed = new string(sub.Reverse().ToArray());
 
             return x.Substring(0, start) + reversed + x.Substring(end + 1);
-        }
-
-        public override string Unscramble(string x)
-        {
-            return Apply(x);
         }
     }
 
