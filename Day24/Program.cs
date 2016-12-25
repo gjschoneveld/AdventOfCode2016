@@ -40,18 +40,18 @@ namespace Day24
                     continue;
                 }
 
-                var newVisited = visited;
+                var nbVisited = visited;
                 if (nbSymbol != '0' && char.IsDigit(nbSymbol))
                 {
-                    newVisited = visited.Clone() as bool[];
-                    newVisited[nbSymbol - '0' - 1] = true;
+                    nbVisited = visited.Clone() as bool[];
+                    nbVisited[nbSymbol - '0' - 1] = true;
                 }
 
                 result.Add(new State
                 {
                     x = nb.x,
                     y = nb.y,
-                    visited = newVisited,
+                    visited = nbVisited,
                     maze = maze
                 });
             }
