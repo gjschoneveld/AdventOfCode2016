@@ -66,10 +66,7 @@ namespace Day24
             foreach (var v in visited)
             {
                 hash <<= 1;
-                if (v)
-                {
-                    hash |= 1;
-                }                
+                hash |= v ? 1 : 0;
             }
 
             return hash;
