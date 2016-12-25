@@ -6,51 +6,121 @@ using System.Text.RegularExpressions;
 
 namespace Day22
 {
-    enum NodeState
-    {
-        Empty,
-        Occupied,
-        Fixed,
-        Special
-    }
-
-    class Move
-    {
-        public Position from;
-        public Position to;
-    }
-
-    class State
-    {
-        public NodeState[,] start;
-        public Move[] steps;
-
-        private void Move(NodeState[,] grid, Move m)
-        {
-            var from = m.from;
-            var to = m.to;
-
-            grid[to.y, to.x] = grid[from.y, from.x];
-            grid[from.y, from.x] = NodeState.Empty;
-        }
-
-        public NodeState[,] GenerateGrid()
-        {
-            NodeState[,] grid = start.Clone() as NodeState[,];
-
-            foreach (var m in steps)
-            {
-                Move(grid, m);
-            }
-
-            return grid;
-        }
-    }
-
-    class Position
+    class Position : IEquatable<Position>
     {
         public int x;
         public int y;
+
+        public bool Equals(Position other)
+        {
+            if (other == null)
+            {
+                return false;
+            }
+
+            return x == other.x && y == other.y;
+        }
+
+        public override bool Equals(object obj)
+        {
+            var other = obj as Position;
+            if (other == null)
+            {
+                return false;
+            }
+
+            return Equals(other);
+        }
+
+        public override int GetHashCode()
+        {
+            return (x << 8) ^ y;
+        }
+
+        public override string ToString()
+        {
+            return string.Format("({0},{1})", x, y);
+        }
+    }
+
+    class State : IEquatable<State>
+    {
+        public Position empty;
+        public Position special;
+
+        public Position[] solid;
+
+        public Position bottomRight;
+
+        private State Move(Position from, Position to)
+        {
+            Position special = this.special;
+            if (this.special.Equals(from))
+            {
+                special = to;
+            }
+
+            return new State
+            {
+                empty = from,
+                special = special,
+                solid = solid,
+                bottomRight = bottomRight
+            };
+        }
+
+        public State[] Next()
+        {
+            var result = new List<State>();
+
+            Position[] neighbours = {
+                new Position { x = empty.x, y = empty.y - 1},
+                new Position { x = empty.x - 1, y = empty.y},
+                new Position { x = empty.x + 1, y = empty.y},
+                new Position { x = empty.x, y = empty.y + 1}
+            };
+
+            foreach (var nb in neighbours)
+            {
+                bool validX = 0 <= nb.x && nb.x <= bottomRight.x;
+                bool validY = 0 <= nb.y && nb.y <= bottomRight.y;
+                bool validPosition = validX && validY;
+
+                if (validPosition && !solid.Contains(nb))
+                {
+                    var newState = Move(nb, empty);
+                    result.Add(newState);
+                }
+            }
+
+            return result.ToArray();
+        }
+
+        public bool Equals(State other)
+        {
+            if (other == null)
+            {
+                return false;
+            }
+
+            return empty.Equals(other.empty) && special.Equals(other.special);
+        }
+
+        public override bool Equals(object obj)
+        {
+            var other = obj as State;
+            if (other == null)
+            {
+                return false;
+            }
+
+            return Equals(other);
+        }
+
+        public override int GetHashCode()
+        {
+            return (empty.GetHashCode() << 16) ^ special.GetHashCode();
+        }
     }
 
     class Node
@@ -60,8 +130,6 @@ namespace Day22
 
         public int used;
         public int avail;
-
-        public bool needed;
 
         public static Node Parse(string x)
         {
@@ -79,121 +147,8 @@ namespace Day22
         }
     }
 
-    class StateComparer : IEqualityComparer<State>
-    {
-        public bool Equals(State sa, State sb)
-        {
-            NodeState[,] a = sa.GenerateGrid();
-            NodeState[,] b = sb.GenerateGrid();
-
-            for (int r = 0; r < a.GetLength(0); r++)
-            {
-                for (int c = 0; c < a.GetLength(1); c++)
-                {
-                    if (a[r,c] != b[r,c])
-                    {
-                        return false;
-                    }
-                }
-            }
-
-            return true;
-        }
-
-        public int GetHashCode(State sx)
-        {
-            NodeState[,] x = sx.GenerateGrid();
-
-            int hash = 0;
-
-            for (int r = 0; r < x.GetLength(0); r++)
-            {
-                for (int c = 0; c < x.GetLength(1); c++)
-                {
-                    hash ^= r * c * ((int)x[r, c] + 1);
-                }
-            }
-
-            return hash;
-        }
-    }
-
     class Program
     {
-        static State Move(State state, Position from, Position to)
-        {
-            var newSteps = new List<Move>(state.steps);
-            newSteps.Add(new Move { from = from, to = to } );
-
-            return new State
-            {
-                start = state.start,
-                steps = newSteps.ToArray()
-            };
-        }
-
-        static State[] Next(State state)
-        {
-            var result = new List<State>();
-
-            var grid = state.GenerateGrid();
-
-            for (int r = 0; r < grid.GetLength(0); r++)
-            {
-                for (int c = 0; c < grid.GetLength(1); c++)
-                {
-                    var node = grid[r, c];
-
-                    Position[] neighbours = {
-                        new Position { x = c, y = r - 1},
-                        new Position { x = c - 1, y = r},
-                        new Position { x = c + 1, y = r},
-                        new Position { x = c, y = r + 1}
-                    };
-
-                    foreach (var nb in neighbours)
-                    {
-                        bool validX = 0 <= nb.x && nb.x < grid.GetLength(1);
-                        bool validY = 0 <= nb.y && nb.y < grid.GetLength(0);
-                        bool validPosition = validX && validY;
-
-                        if (validPosition && grid[nb.y, nb.x] == NodeState.Empty && (node == NodeState.Occupied || node == NodeState.Special))
-                        {
-                            var pos = new Position { x = c, y = r };
-                            var newState = Move(state, pos, nb);
-                            result.Add(newState);
-                        }
-                    }
-
-                }
-            }
-
-            return result.ToArray();
-        }
-
-        static void Print(State state)
-        {
-            var grid = state.GenerateGrid();
-
-            var charMap = new Dictionary<NodeState,char> {
-                { NodeState.Empty, '_' },
-                { NodeState.Occupied, '.' },
-                { NodeState.Fixed, '#' },
-                { NodeState.Special, 'G' }
-            };
-
-            for (int r = 0; r < grid.GetLength(0); r++)
-            {
-                for (int c = 0; c < grid.GetLength(1); c++)
-                {
-                    var node = grid[r, c];
-                    Console.Write("{0}  ", charMap[node]);
-			    }
-                Console.WriteLine();
-			}
-            Console.WriteLine();
-        }
-
         static void Main(string[] args)
         {
             string[] input = {
@@ -1189,20 +1144,6 @@ namespace Day22
                 "/dev/grid/node-x32-y29   91T   71T    20T   78%"
             };
 
-            /*
-            input = new string[] {
-                "/dev/grid/node-x0-y0   10T    8T     2T   80%",
-                "/dev/grid/node-x0-y1   11T    6T     5T   54%",
-                "/dev/grid/node-x0-y2   32T   28T     4T   87%",
-                "/dev/grid/node-x1-y0    9T    7T     2T   77%",
-                "/dev/grid/node-x1-y1    8T    0T     8T    0%",
-                "/dev/grid/node-x1-y2   11T    7T     4T   63%",
-                "/dev/grid/node-x2-y0   10T    6T     4T   60%",
-                "/dev/grid/node-x2-y1    9T    8T     1T   88%",
-                "/dev/grid/node-x2-y2    9T    6T     3T   66%"
-            };
-            */
-
             var nodes = input.Select(i => Node.Parse(i)).ToArray();
 
             int pairs = 0;
@@ -1223,52 +1164,32 @@ namespace Day22
             var maxX = nodes.Max(n => n.x);
             var maxY = nodes.Max(n => n.y);
 
-            var startGrid = new NodeState[maxY + 1, maxX + 1];
-            foreach (var node in nodes)
-            {
-                if (node.used == 0)
-                {
-                    startGrid[node.y, node.x] = NodeState.Empty;
-                }
-                else if (node.used < 200)
-                {
-                    startGrid[node.y, node.x] = NodeState.Occupied;
-                }
-                else
-                {
-                    startGrid[node.y, node.x] = NodeState.Fixed;
-                }
-            }
-
-            // mark top right as needed
-            startGrid[0, maxX] = NodeState.Special;
-
+            var empty = nodes.Single(n => n.used == 0);
+            var solid = nodes.Where(n => n.used > 200);
+            
             State start = new State
             {
-                start = startGrid,
-                steps = new Move[0]
+                empty = new Position { x = empty.x, y = empty.y },
+                special = new Position { x = maxX, y = 0 },
+                solid = solid.Select(n => new Position { x = n.x, y = n.y }).ToArray(),
+                bottomRight = new Position { x = maxX, y = maxY }
             };
 
             State[] current = { start };
-            var seen = new HashSet<State>(new StateComparer());
+            var seen = new HashSet<State>(current);
 
             int steps = 0;
-            while (!current.Any(s => s.GenerateGrid()[0,0] == NodeState.Special))
+            var topLeft = new Position { x = 0, y = 0 };
+            while (!current.Any(s => s.special.Equals(topLeft)))
             {
-                Console.WriteLine(current.Length);
-                // Console.Write('.');
-
-                var next = current.SelectMany(s => Next(s)).Distinct().ToArray();
-
+                var next = current.SelectMany(s => s.Next()).Distinct().ToArray();
                 var newNext = next.Where(s => !seen.Contains(s)).ToArray();
 
                 seen.UnionWith(newNext);
 
                 current = newNext;
-
                 steps++;
             }
-            Console.WriteLine();
 
             Console.WriteLine("Answer 2: {0}", steps);
 
