@@ -108,18 +108,6 @@ namespace Day23
     {
         static void Main(string[] args)
         {
-            /*
-            string[] input = {
-                "cpy 2 a",
-                "tgl a",
-                "tgl a",
-                "tgl a",
-                "cpy 1 a",
-                "dec a",
-                "dec a"
-            };
-             */
-
             string[] input = {
                 "cpy a b",
                 "dec b",
