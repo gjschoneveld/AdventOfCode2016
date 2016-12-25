@@ -6,6 +6,47 @@ using System.Text.RegularExpressions;
 
 namespace Day22
 {
+    enum NodeState
+    {
+        Empty,
+        Occupied,
+        Fixed,
+        Special
+    }
+
+    class Move
+    {
+        public Position from;
+        public Position to;
+    }
+
+    class State
+    {
+        public NodeState[,] start;
+        public Move[] steps;
+
+        private void Move(NodeState[,] grid, Move m)
+        {
+            var from = m.from;
+            var to = m.to;
+
+            grid[to.y, to.x] = grid[from.y, from.x];
+            grid[from.y, from.x] = NodeState.Empty;
+        }
+
+        public NodeState[,] GenerateGrid()
+        {
+            NodeState[,] grid = start.Clone() as NodeState[,];
+
+            foreach (var m in steps)
+            {
+                Move(grid, m);
+            }
+
+            return grid;
+        }
+    }
+
     class Position
     {
         public int x;
@@ -38,19 +79,18 @@ namespace Day22
         }
     }
 
-    class StateComparer : IEqualityComparer<Node[,]>
+    class StateComparer : IEqualityComparer<State>
     {
-        public bool Equals(Node[,] a, Node[,] b)
+        public bool Equals(State sa, State sb)
         {
+            NodeState[,] a = sa.GenerateGrid();
+            NodeState[,] b = sb.GenerateGrid();
+
             for (int r = 0; r < a.GetLength(0); r++)
             {
                 for (int c = 0; c < a.GetLength(1); c++)
                 {
-                    if (a[r,c].used != b[r,c].used)
-                    {
-                        return false;
-                    }
-                    if (a[r,c].needed != b[r,c].needed)
+                    if (a[r,c] != b[r,c])
                     {
                         return false;
                     }
@@ -60,15 +100,17 @@ namespace Day22
             return true;
         }
 
-        public int GetHashCode(Node[,] x)
+        public int GetHashCode(State sx)
         {
+            NodeState[,] x = sx.GenerateGrid();
+
             int hash = 0;
 
             for (int r = 0; r < x.GetLength(0); r++)
             {
                 for (int c = 0; c < x.GetLength(1); c++)
                 {
-                    hash ^= r * c * x[r, c].used;
+                    hash ^= r * c * ((int)x[r, c] + 1);
                 }
             }
 
@@ -78,53 +120,44 @@ namespace Day22
 
     class Program
     {
-        static Node[,] Move(Node[,] state, Position from, Position to)
+        static State Move(State state, Position from, Position to)
         {
-            var newState = state.Clone() as Node[,];
+            var newSteps = new List<Move>(state.steps);
+            newSteps.Add(new Move { from = from, to = to } );
 
-            newState[to.y, to.x] = new Node
+            return new State
             {
-                x = state[to.y, to.x].x,
-                y = state[to.y, to.x].y,
-                used = state[to.y, to.x].used + state[from.y, from.x].used,
-                avail = state[to.y, to.x].avail - state[from.y, from.x].used,
-                needed = state[from.y, from.x].needed
+                start = state.start,
+                steps = newSteps.ToArray()
             };
-
-            newState[from.y, from.x] = new Node
-            {
-                x = state[from.y, from.x].x,
-                y = state[from.y, from.x].y,
-                avail = state[from.y, from.x].avail + state[from.y, from.x].used
-            };
-
-            return newState;
         }
 
-        static Node[][,] Next(Node[,] state)
+        static State[] Next(State state)
         {
-            var result = new List<Node[,]>();
+            var result = new List<State>();
 
-            for (int r = 0; r < state.GetLength(0); r++)
+            var grid = state.GenerateGrid();
+
+            for (int r = 0; r < grid.GetLength(0); r++)
             {
-                for (int c = 0; c < state.GetLength(1); c++)
+                for (int c = 0; c < grid.GetLength(1); c++)
                 {
-                    var node = state[r, c];
+                    var node = grid[r, c];
 
                     Position[] neighbours = {
-                        new Position { x = node.x, y = node.y - 1},
-                        new Position { x = node.x - 1, y = node.y},
-                        new Position { x = node.x + 1, y = node.y},
-                        new Position { x = node.x, y = node.y + 1}
+                        new Position { x = c, y = r - 1},
+                        new Position { x = c - 1, y = r},
+                        new Position { x = c + 1, y = r},
+                        new Position { x = c, y = r + 1}
                     };
 
                     foreach (var nb in neighbours)
                     {
-                        bool validX = 0 <= nb.x && nb.x < state.GetLength(1);
-                        bool validY = 0 <= nb.y && nb.y < state.GetLength(0);
+                        bool validX = 0 <= nb.x && nb.x < grid.GetLength(1);
+                        bool validY = 0 <= nb.y && nb.y < grid.GetLength(0);
                         bool validPosition = validX && validY;
 
-                        if (validPosition && node.used != 0 && node.used <= state[nb.y, nb.x].avail)
+                        if (validPosition && grid[nb.y, nb.x] == NodeState.Empty && (node == NodeState.Occupied || node == NodeState.Special))
                         {
                             var pos = new Position { x = c, y = r };
                             var newState = Move(state, pos, nb);
@@ -138,15 +171,23 @@ namespace Day22
             return result.ToArray();
         }
 
-        static void Print(Node[,] state)
+        static void Print(State state)
         {
-            for (int r = 0; r < state.GetLength(0); r++)
-            {
-                for (int c = 0; c < state.GetLength(1); c++)
-                {
-                    var node = state[r, c];
+            var grid = state.GenerateGrid();
 
-                    Console.Write("{0}{1}/{2}\t", node.used, node.needed? "*": "", node.used + node.avail);
+            var charMap = new Dictionary<NodeState,char> {
+                { NodeState.Empty, '_' },
+                { NodeState.Occupied, '.' },
+                { NodeState.Fixed, '#' },
+                { NodeState.Special, 'G' }
+            };
+
+            for (int r = 0; r < grid.GetLength(0); r++)
+            {
+                for (int c = 0; c < grid.GetLength(1); c++)
+                {
+                    var node = grid[r, c];
+                    Console.Write("{0}  ", charMap[node]);
 			    }
                 Console.WriteLine();
 			}
@@ -1182,20 +1223,37 @@ namespace Day22
             var maxX = nodes.Max(n => n.x);
             var maxY = nodes.Max(n => n.y);
 
-            var start = new Node[maxY + 1, maxX + 1];
+            var startGrid = new NodeState[maxY + 1, maxX + 1];
             foreach (var node in nodes)
             {
-                start[node.y, node.x] = node;
+                if (node.used == 0)
+                {
+                    startGrid[node.y, node.x] = NodeState.Empty;
+                }
+                else if (node.used < 200)
+                {
+                    startGrid[node.y, node.x] = NodeState.Occupied;
+                }
+                else
+                {
+                    startGrid[node.y, node.x] = NodeState.Fixed;
+                }
             }
 
             // mark top right as needed
-            start[0, maxX].needed = true;
+            startGrid[0, maxX] = NodeState.Special;
 
-            Node[][,] current = { start };
-            var seen = new HashSet<Node[,]>(new StateComparer());
+            State start = new State
+            {
+                start = startGrid,
+                steps = new Move[0]
+            };
+
+            State[] current = { start };
+            var seen = new HashSet<State>(new StateComparer());
 
             int steps = 0;
-            while (!current.Any(s => s[0,0].needed))
+            while (!current.Any(s => s.GenerateGrid()[0,0] == NodeState.Special))
             {
                 Console.WriteLine(current.Length);
                 // Console.Write('.');
