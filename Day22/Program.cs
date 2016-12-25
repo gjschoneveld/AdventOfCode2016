@@ -55,7 +55,7 @@ namespace Day22
         private State Move(Position from, Position to)
         {
             Position special = this.special;
-            if (this.special.Equals(from))
+            if (special.Equals(from))
             {
                 special = to;
             }
