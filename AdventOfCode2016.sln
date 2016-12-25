@@ -45,6 +45,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Day21", "Day21\Day21.csproj
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Day22", "Day22\Day22.csproj", "{B6CA5192-9775-4FCC-8349-E49F639B7FA8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Day23", "Day23\Day23.csproj", "{04DA4F17-5BD4-427F-A39A-C23F1A1898BE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Day24", "Day24\Day24.csproj", "{6B48D93E-11CF-4807-91F0-395148ABEE55}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -139,6 +143,14 @@ Global
 		{B6CA5192-9775-4FCC-8349-E49F639B7FA8}.Debug|x86.Build.0 = Debug|x86
 		{B6CA5192-9775-4FCC-8349-E49F639B7FA8}.Release|x86.ActiveCfg = Release|x86
 		{B6CA5192-9775-4FCC-8349-E49F639B7FA8}.Release|x86.Build.0 = Release|x86
+		{04DA4F17-5BD4-427F-A39A-C23F1A1898BE}.Debug|x86.ActiveCfg = Debug|x86
+		{04DA4F17-5BD4-427F-A39A-C23F1A1898BE}.Debug|x86.Build.0 = Debug|x86
+		{04DA4F17-5BD4-427F-A39A-C23F1A1898BE}.Release|x86.ActiveCfg = Release|x86
+		{04DA4F17-5BD4-427F-A39A-C23F1A1898BE}.Release|x86.Build.0 = Release|x86
+		{6B48D93E-11CF-4807-91F0-395148ABEE55}.Debug|x86.ActiveCfg = Debug|x86
+		{6B48D93E-11CF-4807-91F0-395148ABEE55}.Debug|x86.Build.0 = Debug|x86
+		{6B48D93E-11CF-4807-91F0-395148ABEE55}.Release|x86.ActiveCfg = Release|x86
+		{6B48D93E-11CF-4807-91F0-395148ABEE55}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
