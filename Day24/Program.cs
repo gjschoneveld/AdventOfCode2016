@@ -81,7 +81,7 @@ namespace Day24
             {
                 return false;
             }
-            
+
             return Equals(other);
         }
 
@@ -102,6 +102,26 @@ namespace Day24
 
     class Program
     {
+        static int StepsNeeded(State start, Func<State, bool> finishedPredicate)
+        {
+            State[] current = { start };
+            var seen = new HashSet<State>(current);
+
+            int steps = 0;
+            while (!current.Any(s => finishedPredicate(s)))
+            {
+                var next = current.SelectMany(s => s.Next()).Distinct().ToArray();
+                var newNext = next.Where(s => !seen.Contains(s)).ToArray();
+
+                seen.UnionWith(newNext);
+
+                current = newNext;
+                steps++;
+            }
+
+            return steps;
+        }
+
         static void Main(string[] args)
         {
             var input = File.ReadAllLines("input.txt");
@@ -137,38 +157,12 @@ namespace Day24
                 maze = maze
             };
 
-            State[] current = { start };
-            var seen = new HashSet<State>(current);
-
-            int steps = 0;
-            while (!current.Any(s => s.visited.All(v => v)))
-            {
-                var next = current.SelectMany(s => s.Next()).Distinct().ToArray();
-                var newNext = next.Where(s => !seen.Contains(s)).ToArray();
-
-                seen.UnionWith(newNext);
-
-                current = newNext;
-                steps++;
-            }
+            var steps = StepsNeeded(start, s => s.visited.All(v => v));
 
             Console.WriteLine("Answer 1: {0}", steps);
 
 
-            current = new State[] { start };
-            seen = new HashSet<State>(current);
-
-            steps = 0;
-            while (!current.Any(s => s.x == startX && s.y == startY && s.visited.All(v => v)))
-            {
-                var next = current.SelectMany(s => s.Next()).Distinct().ToArray();
-                var newNext = next.Where(s => !seen.Contains(s)).ToArray();
-
-                seen.UnionWith(newNext);
-
-                current = newNext;
-                steps++;
-            }
+            steps = StepsNeeded(start, s => s.x == startX && s.y == startY && s.visited.All(v => v));
 
             Console.WriteLine("Answer 2: {0}", steps);
 
