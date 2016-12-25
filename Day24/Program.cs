@@ -63,13 +63,13 @@ namespace Day24
         {
             var hash = (x << 16) ^ y;
 
-            for (int i = 0; i < visited.Length; i++)
+            foreach (var v in visited)
             {
                 hash <<= 1;
-                if (visited[i])
+                if (v)
                 {
                     hash |= 1;
-                }
+                }                
             }
 
             return hash;
