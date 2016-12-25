@@ -34,16 +34,17 @@ namespace Day24
 
             foreach (var nb in neighbours)
             {
-                if (maze[nb.y, nb.x] == '#')
+                var nbSymbol = maze[nb.y, nb.x];
+                if (nbSymbol == '#')
                 {
                     continue;
                 }
 
                 var newVisited = visited;
-                if (maze[nb.y, nb.x] != '0' && char.IsDigit(maze[nb.y, nb.x]))
+                if (nbSymbol != '0' && char.IsDigit(nbSymbol))
                 {
                     newVisited = visited.Clone() as bool[];
-                    newVisited[maze[nb.y, nb.x] - '0' - 1] = true;
+                    newVisited[nbSymbol - '0' - 1] = true;
                 }
 
                 result.Add(new State
