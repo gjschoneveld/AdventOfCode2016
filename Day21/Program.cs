@@ -201,7 +201,7 @@ namespace Day21
         public int from;
         public int to;
 
-        public override string Apply(string x)
+        private string Move(string x, int from, int to)
         {
             var chars = x.ToList();
             var c = chars[from];
@@ -211,14 +211,14 @@ namespace Day21
             return new string(chars.ToArray());
         }
 
+        public override string Apply(string x)
+        {
+            return Move(x, from, to);
+        }
+
         public override string Unscramble(string x)
         {
-            var chars = x.ToList();
-            var c = chars[to];
-            chars.RemoveAt(to);
-            chars.Insert(from, c);
-
-            return new string(chars.ToArray());
+            return Move(x, to, from);
         }
     }
 
