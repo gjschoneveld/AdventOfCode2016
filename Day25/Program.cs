@@ -151,7 +151,7 @@ namespace Day25
 
                 var comp = new Computer
                 {
-                    instructionMemory = input.Clone() as string[]
+                    instructionMemory = input
                 };
 
                 comp.Write("a", a);
